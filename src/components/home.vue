@@ -12,10 +12,15 @@
 	  
       <el-container>
 		  <!-- 左边菜单栏 -->
-        <el-aside width="200px" class="aside">
+        <el-aside :width="iscollapse ? '60px' : '200px'" class="aside">
+					<div class="collapse" @click="chanceCollapse">
+						| | |
+					</div>
           <el-menu
             default-active="2"
-			:unique-opened="true"
+						:unique-opened="true"
+						:collapse="iscollapse"
+						:collapse-transition="false"
             class="el-menu-vertical-demo"
             background-color="#545c64"
             text-color="#fff"
@@ -57,6 +62,7 @@ export default {
 			'102': 'iconfont icon-zhangdan',
 			'145': 'iconfont icon-shujutongji',
 		},
+		iscollapse: false,
 	};
   },
   created(){
@@ -74,6 +80,10 @@ export default {
 		const res = await this.$api('/menus')
 		this.Menuslist = res.data.data
 		console.log(this.Menuslist)
+	},
+	// 左侧菜单栏伸缩
+	chanceCollapse(){
+		this.iscollapse = !this.iscollapse
 	}
   },
 };
@@ -108,6 +118,10 @@ export default {
   .el-menu{
 	  border: none;
   }
+	.collapse{
+		background-color: #4a5064;
+		text-align: center;
+	}
 }
 .main {
   background-color: #eaedf1;
