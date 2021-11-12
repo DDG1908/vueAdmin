@@ -17,10 +17,11 @@
 						| | |
 					</div>
           <el-menu
-            default-active="2"
+            :default-active="this.$route.path.slice(1)"
 						:unique-opened="true"
 						:collapse="iscollapse"
 						:collapse-transition="false"
+            :router="true"
             class="el-menu-vertical-demo"
             background-color="#545c64"
             text-color="#fff"
@@ -34,17 +35,19 @@
               </template>
 			  <!-- 二级菜单 -->
               <el-menu-item-group>
-                <el-menu-item :index="String(citem.id)" v-for="citem in item.children" :key="citem.id">
-					<i class="el-icon-menu"></i>
+                <el-menu-item :index="citem.path" v-for="citem in item.children" :key="citem.id">
+					        <i class="el-icon-menu"></i>
                 	<span>{{citem.authName}}</span>
-				</el-menu-item>
+				        </el-menu-item>
               </el-menu-item-group>
             </el-submenu>
           </el-menu>
         </el-aside>
 
 		<!-- 右边主体区 -->
-        <el-main class="main">主题</el-main>
+        <el-main class="main">
+          <router-view></router-view>
+        </el-main>
       </el-container>
     </el-container>
   </div>
@@ -66,8 +69,7 @@ export default {
 	};
   },
   created(){
-	  this.getMenulist()
-	  
+	  this.getMenulist()	  
   },
   methods: {
 	//退出登陆
@@ -84,7 +86,7 @@ export default {
 	// 左侧菜单栏伸缩
 	chanceCollapse(){
 		this.iscollapse = !this.iscollapse
-	}
+	},
   },
 };
 </script>
@@ -106,7 +108,7 @@ export default {
     height: 50px;
   }
   span {
-	  color: #fff;
+	color: #fff;
     margin-left: 20px;
   }
 }
@@ -121,6 +123,7 @@ export default {
 	.collapse{
 		background-color: #4a5064;
 		text-align: center;
+		cursor: pointer;
 	}
 }
 .main {
