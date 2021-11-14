@@ -127,6 +127,7 @@ export default {
 	}
 }
 .main {
+  height: 100%;
   background-color: #eaedf1;
 }
 </style>
