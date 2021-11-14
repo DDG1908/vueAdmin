@@ -7,13 +7,14 @@
     </el-breadcrumb>
     <el-card class="box-card">
         <!-- 搜索框 -->
-      <el-col :span="6">
+      <el-col :span="8">
         <el-input
           placeholder="请输入内容"
-          v-model="inputTxt"
-          class="input-with-select"
+          v-model="params.query"
+					clearable
+					@clear="getUsers()"
         >
-          <el-button slot="append" icon="el-icon-search"></el-button>
+          <el-button slot="append" icon="el-icon-search" @click="getUsers()"></el-button>
         </el-input>
       </el-col>
       <!-- 按钮 -->
@@ -27,12 +28,12 @@
         <el-table-column prop="mobile" label="电话"></el-table-column>
         <el-table-column prop="email" label="邮箱"></el-table-column>
         <el-table-column prop="role_name" label="角色"></el-table-column>
-        <el-table-column prop="mg_state" label="状态">
+        <el-table-column prop="mg_state" label="状态" width="70px">
             <template v-slot="user">
-                <el-switch v-model="user.row.mg_state"></el-switch>
+                <el-switch v-model="user.row.mg_state" @change="changeUserState(user.row)"></el-switch>
             </template>
         </el-table-column>
-        <el-table-column label="操作">
+        <el-table-column label="操作" width="180px">
             <template>
                 <el-tooltip class="item" effect="dark" content="编辑" placement="top" :enterable="false">
                     <el-button type="primary" icon="el-icon-edit" size="mini"></el-button>
@@ -68,11 +69,12 @@ export default {
   data() {
     return {
       params: {
+				// 查询用户用的关键字
         query: "",
         // 当前页
         pagenum: 1,
         // 一页多少条
-        pagesize: 1,
+        pagesize: 5,
       },
       inputTxt: '',
       userList: [],
@@ -100,6 +102,17 @@ export default {
       this.params.pagenum = val
       this.getUsers()
     },
+		// 改变用户状态
+		async changeUserState(user){
+			const{data:res} = await this.$api.put(`/users/${user.id}/state/${user.mg_stat}`)
+			if(res.meta.status !== 200){
+				user.mg_stat = !user.mg_stat
+				this.$message.error('状态改变失败')
+			}
+			else{
+				this.$message.success('状态改变成功')
+			}
+		}
   },
 };
 </script>
@@ -108,7 +121,6 @@ export default {
 .box-card {
   margin-top: 10px;
   padding-bottom: 10px;
-  height: 85vh;
   .el-col{
       margin-bottom: 20px;
   }
