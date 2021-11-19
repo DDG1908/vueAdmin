@@ -36,12 +36,12 @@
             </template>
         </el-table-column>
         <el-table-column label="操作" width="180px">
-            <template>
+            <template v-slot="user">
                 <el-tooltip class="item" effect="dark" content="编辑" placement="top" :enterable="false">
-                    <el-button type="primary" @click="changeEditDialogVisible" icon="el-icon-edit" size="mini"></el-button>
+                    <el-button type="primary" @click="changeEditDialogVisible(user.row)" icon="el-icon-edit" size="mini"></el-button>
                 </el-tooltip>
                 <el-tooltip class="item" effect="dark" content="删除" placement="top" :enterable="false">
-                    <el-button type="danger" icon="el-icon-delete" size="mini"></el-button>
+                    <el-button type="danger" @click="deleteUserWarn(user.row.id)" icon="el-icon-delete" size="mini"></el-button>
                 </el-tooltip>
                 <el-tooltip class="item" effect="dark" content="分配角色" placement="top" :enterable="false">
                     <el-button type="info" icon="el-icon-setting" size="mini"></el-button>
@@ -92,23 +92,20 @@
       title="修改用户信息"
       :visible.sync="editdialogVisible"
       width="40%">
-      <el-form :model="addUserForm" :rules="addUserRules" ref="addUserFormRef" label-width="100px">
+      <el-form :model="editUserForm" :rules="addUserRules" ref="editUserFormRef" label-width="100px">
         <el-form-item label="用户名" prop="username">
-          <el-input v-model="addUserForm.username"></el-input>
-        </el-form-item>
-        <el-form-item label="密码" prop="password">
-          <el-input v-model="addUserForm.password"></el-input>
+          <el-input v-model="editUserForm.username" disabled></el-input>
         </el-form-item>
         <el-form-item label="邮箱" prop="email">
-          <el-input v-model="addUserForm.email"></el-input>
+          <el-input v-model="editUserForm.email"></el-input>
         </el-form-item>
         <el-form-item label="手机" prop="mobile">
-          <el-input v-model="addUserForm.mobile" :maxlength="11"></el-input>
+          <el-input v-model="editUserForm.mobile" :maxlength="11"></el-input>
         </el-form-item>
       </el-form>
       <span slot="footer" class="dialog-footer">
-        <el-button @click="dialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="addUserSubmit">确 定</el-button>
+        <el-button @click="editdialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="editUserSubmit">确 定</el-button>
       </span>
     </el-dialog>
   </div>
@@ -153,6 +150,12 @@ export default {
         email: '',
         mobile: '',
       },
+      editUserForm: {
+        username: '',
+        email: '',
+        mobile: '',
+      },
+      userId: '',     //编辑某个用户的用户id，用于传给修改用户信息的接口
       addUserRules: {
         username: [
             { required: true, message: '请输入用户名', trigger: 'blur' },
@@ -197,7 +200,8 @@ export default {
     },
 		// 改变用户状态
 		async changeUserState(user){
-			const{data:res} = await this.$api.put(`/users/${user.id}/state/${user.mg_stat}`)
+      console.log(user.mg_state);
+			const{data:res} = await this.$api.put(`/users/${user.id}/state/${user.mg_state}`)
 			if(res.meta.status !== 200){
 				user.mg_stat = !user.mg_stat
 				this.$message.error('状态改变失败')
@@ -214,6 +218,7 @@ export default {
     dialogClose(){
       this.$refs.addUserFormRef.resetFields()
     },
+    //添加用户提交
     addUserSubmit(){
       this.$refs.addUserFormRef.validate(async valid => {
         if(!valid){
@@ -232,9 +237,58 @@ export default {
         }
       })
     },
-    //添加用户弹窗
-    changeEditDialogVisible(){
+    //编辑用户弹窗
+    changeEditDialogVisible(user){
+      this.editUserForm.username = user.username
+      this.editUserForm.mobile = user.mobile
+      this.editUserForm.email = user.email
+      this.userId = user.id
       this.editdialogVisible = true
+    },
+    // 编辑用户提交
+    editUserSubmit(){
+      this.$refs.editUserFormRef.validate(async valid => {
+        if(!valid){
+          this.$message.error('请正确填写信息')
+        }
+        else{
+          const {data:res} = await this.$api.put(`/users/${this.userId}`,this.editUserForm)
+          if(res.meta.status !==200){
+            this.$message.error(`修改失败!${res.meta.msg}`)
+          }
+          else{
+            this.$message.success('修改成功！')
+          }
+          this.editdialogVisible = false
+          this.getUsers()
+        }
+      })
+    },
+    //删除用户
+    async deleteUser(id){
+      const {data:res} = await this.$api.delete(`users/${id}`)
+      if(res.meta.status !==200){
+        this.$message.error(`删除失败!${res.meta.msg}`)
+      }
+      else{
+        this.$message.success('删除成功')
+        this.getUsers()
+      }
+    },
+    //点击删除用户弹出提示框
+    deleteUserWarn(id) {
+      this.$confirm('此操作将永久删除该用户, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.deleteUser(id)
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
+        });          
+      });
     },
   },
 };
