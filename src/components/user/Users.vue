@@ -200,7 +200,6 @@ export default {
     },
 		// 改变用户状态
 		async changeUserState(user){
-      console.log(user.mg_state);
 			const{data:res} = await this.$api.put(`/users/${user.id}/state/${user.mg_state}`)
 			if(res.meta.status !== 200){
 				user.mg_stat = !user.mg_stat
