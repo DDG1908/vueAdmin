@@ -218,7 +218,7 @@ export default {
       this.$refs.addUserFormRef.resetFields()
     },
     //添加用户提交
-    addUserSubmit(){
+    async addUserSubmit(){
       this.$refs.addUserFormRef.validate(async valid => {
         if(!valid){
           this.$message.error('请正确填写信息')
