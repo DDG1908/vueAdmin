@@ -114,7 +114,7 @@
       :visible.sync="setRolesdialogVisible"
       width="30%"
       @close="clearSeletedInfo">
-      <div>
+      <div class="setRoles">
         <p>当前用户：{{setRolesForm.username}}</p>
         <p>当前角色：{{setRolesForm.role_name}}</p>
         <el-select v-model="seletedRolesID" placeholder="请选择">
@@ -367,5 +367,8 @@ export default {
 }
 .addBtn {
   margin-left: 30px;
+}
+.setRoles p{
+  margin-bottom: 5px;
 }
 </style>
