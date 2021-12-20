@@ -44,7 +44,7 @@
                     <el-button type="danger" @click="deleteUserWarn(user.row.id)" icon="el-icon-delete" size="mini"></el-button>
                 </el-tooltip>
                 <el-tooltip class="item" effect="dark" content="分配角色" placement="top" :enterable="false">
-                    <el-button type="info" icon="el-icon-setting" size="mini"></el-button>
+                    <el-button type="info" @click="setRoles(user.row)" icon="el-icon-setting" size="mini"></el-button>
                 </el-tooltip>
             </template>
         </el-table-column>
@@ -108,6 +108,29 @@
         <el-button type="primary" @click="editUserSubmit">确 定</el-button>
       </span>
     </el-dialog>
+    <!-- 分配用户权限弹窗 -->
+    <el-dialog
+      title="分配权限"
+      :visible.sync="setRolesdialogVisible"
+      width="30%"
+      @close="clearSeletedInfo">
+      <div>
+        <p>当前用户：{{setRolesForm.username}}</p>
+        <p>当前角色：{{setRolesForm.role_name}}</p>
+        <el-select v-model="seletedRolesID" placeholder="请选择">
+          <el-option
+            v-for="item in rolesList"
+            :key="item.id"
+            :label="item.roleName"
+            :value="item.id">
+          </el-option>
+        </el-select>
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="setRolesdialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="setRolesSubmit">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 
@@ -141,9 +164,12 @@ export default {
         pagesize: 5,  // 一页多少条
       },
       userList: [],
+      rolesList: [],
       total: 0,
       dialogVisible: false,
       editdialogVisible: false,
+      setRolesdialogVisible: false,
+      seletedRolesID: "",
       addUserForm: {
         username: '',
         password: '',
@@ -155,6 +181,7 @@ export default {
         email: '',
         mobile: '',
       },
+      setRolesForm: {},
       userId: '',     //编辑某个用户的用户id，用于传给修改用户信息的接口
       addUserRules: {
         username: [
@@ -289,6 +316,37 @@ export default {
         });          
       });
     },
+    // 分配角色
+    async setRoles(user){
+      this.setRolesForm.username = user.username
+      this.setRolesForm.role_name = user.role_name
+      this.setRolesForm.id = user.id
+      const {data:res} = await this.$api('roles')
+      if(res.meta.status !== 200) {
+          this.$message.error(`获取角色列表失败！${res.meta.msg}`)
+      }
+      this.rolesList = res.data
+      console.log(this.rolesList);
+      this.setRolesdialogVisible = true
+    },
+    //分配角色提交
+    async setRolesSubmit(){
+      if(!this.seletedRolesID){
+        return this.$message.error('请选择一个新的角色')
+      }
+      let {data:res} = await this.$api.put(`users/${this.setRolesForm.id}/role`,{rid:this.seletedRolesID})
+      if(res.meta.status !== 200) {
+        return this.$message.error(`分配角色失败${res.meta.msg}`)
+      }
+      this.$message.success("分配角色成功！")
+      this.getUsers()
+      this.setRolesdialogVisible =false
+
+    },
+    clearSeletedInfo(){
+      this.seletedRolesID = ''
+      this.setRolesForm = {}
+    }
   },
 };
 </script>

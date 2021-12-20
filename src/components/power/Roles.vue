@@ -237,7 +237,6 @@ export default {
           ]
           let idArrToString = idArr.join(',')
           let {data:res} = await this.$api.post(`/roles/${this.roleId}/rights`,{rids:idArrToString})
-          console.log(res);
           if(res.meta.status !== 200) {
             return this.$message.error('操作失败！')
           }
